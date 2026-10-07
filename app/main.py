@@ -1,7 +1,9 @@
 import os
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, status
 from pydantic import BaseModel
+from itertools import count
 
 load_dotenv()
 
@@ -32,6 +34,8 @@ incidencias: list[Incidencia] = [
     )
 ]
 
+generador_id = count(2)
+
 
 @app.get("/")
 def inicio():
@@ -49,3 +53,10 @@ def consultar_incidencia(incidencia_id: int):
         if incidencia.id == incidencia_id:
             return incidencia
     raise HTTPException(status_code=404, detail="Incidencia no encontrada")
+
+
+@app.post("/incidencias", response_model=Incidencia, status_code=status.HTTP_201_CREATED)
+def crear_incidencia(datos: IncidenciaBase):
+    nueva = Incidencia(id=next(generador_id), **datos.model_dump())
+    incidencias.append(nueva)
+    return nueva
