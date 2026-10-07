@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 load_dotenv()
@@ -41,3 +41,11 @@ def inicio():
 @app.get("/incidencias", response_model=list[Incidencia])
 def listar_incidencias():
     return incidencias
+
+
+@app.get("/incidencias/{incidencia_id}", response_model=Incidencia)
+def consultar_incidencia(incidencia_id: int):
+    for incidencia in incidencias:
+        if incidencia.id == incidencia_id:
+            return incidencia
+    raise HTTPException(status_code=404, detail="Incidencia no encontrada")
