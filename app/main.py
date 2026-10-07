@@ -1,7 +1,8 @@
 import os
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, status
 from pydantic import BaseModel
+from itertools import count
 
 load_dotenv()
 
@@ -32,6 +33,8 @@ incidencias: list[Incidencia] = [
     )
 ]
 
+generador_id = count(2)
+
 
 @app.get("/")
 def inicio():
@@ -41,3 +44,9 @@ def inicio():
 @app.get("/incidencias", response_model=list[Incidencia])
 def listar_incidencias():
     return incidencias
+
+@app.post("/incidencias", response_model=Incidencia, status_code=status.HTTP_201_CREATED)
+def crear_incidencia(datos: IncidenciaBase):
+    nueva = Incidencia(id=next(generador_id), **datos.model_dump())
+    incidencias.append(nueva)
+    return nueva
